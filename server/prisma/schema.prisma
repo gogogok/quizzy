@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PARTICIPANT
+  ORGANIZER
+}
+
+enum QuestionType {
+  SINGLE
+  MULTIPLE
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  FINISHED
+}
+
+enum SessionStatus {
+  LOBBY
+  ACTIVE
+  FINISHED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(PARTICIPANT)
+  quizzes      Quiz[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Quiz {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  category    String?
+  timeLimit   Int           @default(15)
+  status      QuizStatus    @default(DRAFT)
+  organizerId Int
+  organizer   User          @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  sessions    QuizSession[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([organizerId])
+}
+
+model Question {
+  id                 Int                 @id @default(autoincrement())
+  text               String
+  imageUrl           String?
+  type               QuestionType        @default(SINGLE)
+  timeLimit          Int                 @default(15)
+  points             Int                 @default(1000)
+  position           Int                 @default(0)
+  quizId             Int
+  quiz               Quiz                @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options            AnswerOption[]
+  participantAnswers ParticipantAnswer[]
+
+  @@index([quizId, position])
+}
+
+model AnswerOption {
+  id         Int                       @id @default(autoincrement())
+  text       String
+  isCorrect  Boolean                   @default(false)
+  position   Int                       @default(0)
+  questionId Int
+  question   Question                  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedIn ParticipantAnswerOption[]
+
+  @@index([questionId])
+}
+
+model QuizSession {
+  id                Int           @id @default(autoincrement())
+  roomCode          String        @unique
+  currentQuestion   Int           @default(-1)
+  status            SessionStatus @default(LOBBY)
+  questionStartedAt DateTime?
+  quizId            Int
+  quiz              Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  participants      Participant[]
+  results           QuizResult[]
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  createdAt         DateTime      @default(now())
+
+  @@index([quizId])
+}
+
+model Participant {
+  id        Int                 @id @default(autoincrement())
+  nickname  String
+  score     Int                 @default(0)
+  socketId  String?
+  sessionId Int
+  session   QuizSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers   ParticipantAnswer[]
+  result    QuizResult?
+  joinedAt  DateTime            @default(now())
+
+  @@index([sessionId])
+}
+
+model ParticipantAnswer {
+  id              Int                       @id @default(autoincrement())
+  isCorrect       Boolean
+  points          Int                       @default(0)
+  answerTimeMs    Int
+  participantId   Int
+  participant     Participant               @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  questionId      Int
+  question        Question                  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptions ParticipantAnswerOption[]
+  createdAt       DateTime                  @default(now())
+
+  @@unique([participantId, questionId])
+  @@index([questionId])
+}
+
+model ParticipantAnswerOption {
+  answerId Int
+  optionId Int
+  answer   ParticipantAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  option   AnswerOption      @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@id([answerId, optionId])
+}
+
+model QuizResult {
+  id            Int         @id @default(autoincrement())
+  score         Int
+  place         Int
+  sessionId     Int
+  session       QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participantId Int         @unique
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@index([sessionId, place])
+}

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: quizzy
+      POSTGRES_USER: quizzy
+      POSTGRES_PASSWORD: quizzy_local_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - quizzy_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizzy -d quizzy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  quizzy_postgres:

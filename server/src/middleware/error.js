@@ -1,0 +1,2 @@
+export function notFound(req,res){res.status(404).json({message:'Маршрут не найден'})}
+export function errorHandler(err,req,res,next){console.error(err);if(err.name==='ZodError')return res.status(400).json({message:'Ошибка валидации',issues:err.issues});if(err.code==='P2002')return res.status(409).json({message:'Такая запись уже существует'});res.status(err.status||500).json({message:process.env.NODE_ENV==='production'?'Ошибка сервера':err.message})}

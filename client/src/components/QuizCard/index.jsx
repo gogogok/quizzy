@@ -1,0 +1,2 @@
+import {Link} from 'react-router-dom';
+export default function QuizCard({title,status='Опубликованный',questions=10,code='7XK3B',date='12.05.2024'}){return <div className="quiz-row"><div><h3>{title} <span className={'badge '+(status==='Завершён'?'green':'')}>{status}</span></h3><div className="meta"><span>{questions} вопросов</span><span>24 участника</span><span>🏆 1860</span></div></div><div className="meta" style={{flexDirection:'column'}}><b>Код: {code}</b><span>{date}</span><Link to="/quiz/1/edit">Редактировать →</Link></div></div>}
