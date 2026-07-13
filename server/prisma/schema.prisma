@@ -31,14 +31,15 @@ enum SessionStatus {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(PARTICIPANT)
-  quizzes      Quiz[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             Int           @id @default(autoincrement())
+  name           String
+  email          String        @unique
+  passwordHash   String
+  role           UserRole      @default(PARTICIPANT)
+  quizzes        Quiz[]
+  participations Participant[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model Quiz {
@@ -104,17 +105,21 @@ model QuizSession {
 }
 
 model Participant {
-  id        Int                 @id @default(autoincrement())
-  nickname  String
-  score     Int                 @default(0)
-  socketId  String?
-  sessionId Int
-  session   QuizSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  answers   ParticipantAnswer[]
-  result    QuizResult?
-  joinedAt  DateTime            @default(now())
+  id             Int                 @id @default(autoincrement())
+  nickname       String
+  score          Int                 @default(0)
+  socketId       String?
+  reconnectToken String?             @unique @default(uuid())
+  sessionId      Int
+  userId         Int?
+  session        QuizSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user           User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  answers        ParticipantAnswer[]
+  result         QuizResult?
+  joinedAt       DateTime            @default(now())
 
   @@index([sessionId])
+  @@index([userId])
 }
 
 model ParticipantAnswer {
