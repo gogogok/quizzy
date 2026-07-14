@@ -1,12 +1,101 @@
-import {z} from 'zod';import {prisma} from '../utils/prisma.js';
-const option=z.object({text:z.string().trim().min(1),isCorrect:z.boolean().default(false)});
-const image=z.string().max(4_200_000).refine(value=>value.startsWith('data:image/')||/^https?:\/\//i.test(value),'Некорректное изображение');
-const question=z.object({text:z.string().trim().min(2),imageUrl:z.union([image,z.literal(''),z.null()]).optional().transform(value=>value||null),type:z.enum(['SINGLE','MULTIPLE']).default('SINGLE'),timeLimit:z.number().int().min(5).max(300).default(15),points:z.number().int().min(1).max(10000).default(1000),options:z.array(option).min(2).max(8).refine(x=>x.some(o=>o.isCorrect),'Нужен правильный вариант')}).refine(q=>q.type==='MULTIPLE'||q.options.filter(o=>o.isCorrect).length===1,{message:'Для одиночного выбора нужен один правильный ответ',path:['options']});
-const quizSchema=z.object({title:z.string().trim().min(2).max(120),description:z.string().max(1000).nullable().optional(),category:z.string().max(80).nullable().optional(),timeLimit:z.number().int().min(5).max(300).default(15),status:z.enum(['DRAFT','PUBLISHED']).default('DRAFT'),questions:z.array(question).default([])});
-const include={questions:{orderBy:{position:'asc'},include:{options:{orderBy:{position:'asc'}}},},_count:{select:{sessions:true}}};
-function nested(data){return {...data,questions:{create:data.questions.map((q,qi)=>({...q,position:qi,options:{create:q.options.map((o,oi)=>({...o,position:oi}))}}))}}}
-export async function listQuizzes(req,res){res.json(await prisma.quiz.findMany({where:{organizerId:req.user.id},include,orderBy:{updatedAt:'desc'}}))}
-export async function getQuiz(req,res){const quiz=await prisma.quiz.findFirst({where:{id:Number(req.params.id),organizerId:req.user.id},include});if(!quiz)return res.status(404).json({message:'Квиз не найден'});res.json(quiz)}
-export async function createQuiz(req,res){const data=quizSchema.parse(req.body);const quiz=await prisma.quiz.create({data:{...nested(data),organizerId:req.user.id},include});res.status(201).json(quiz)}
-export async function updateQuiz(req,res){const id=Number(req.params.id),data=quizSchema.parse(req.body);const found=await prisma.quiz.findFirst({where:{id,organizerId:req.user.id}});if(!found)return res.status(404).json({message:'Квиз не найден'});const quiz=await prisma.$transaction(async tx=>{await tx.question.deleteMany({where:{quizId:id}});return tx.quiz.update({where:{id},data:nested(data),include})});res.json(quiz)}
-export async function deleteQuiz(req,res){const found=await prisma.quiz.findFirst({where:{id:Number(req.params.id),organizerId:req.user.id}});if(!found)return res.status(404).json({message:'Квиз не найден'});await prisma.quiz.delete({where:{id:found.id}});res.status(204).end()}
+import { z } from 'zod';
+import { prisma } from '../utils/prisma.js';
+const option = z.object({ text: z.string().trim().min(1), isCorrect: z.boolean().default(false) });
+const image = z
+  .string()
+  .max(4_200_000)
+  .refine(
+    (value) => value.startsWith('data:image/') || /^https?:\/\//i.test(value),
+    'Некорректное изображение',
+  );
+const question = z
+  .object({
+    text: z.string().trim().min(2),
+    imageUrl: z
+      .union([image, z.literal(''), z.null()])
+      .optional()
+      .transform((value) => value || null),
+    type: z.enum(['SINGLE', 'MULTIPLE']).default('SINGLE'),
+    timeLimit: z.number().int().min(5).max(300).default(15),
+    points: z.number().int().min(1).max(10000).default(1000),
+    options: z
+      .array(option)
+      .min(2)
+      .max(8)
+      .refine((x) => x.some((o) => o.isCorrect), 'Нужен правильный вариант'),
+  })
+  .refine((q) => q.type === 'MULTIPLE' || q.options.filter((o) => o.isCorrect).length === 1, {
+    message: 'Для одиночного выбора нужен один правильный ответ',
+    path: ['options'],
+  });
+const quizSchema = z.object({
+  title: z.string().trim().min(2).max(120),
+  description: z.string().max(1000).nullable().optional(),
+  category: z.string().max(80).nullable().optional(),
+  timeLimit: z.number().int().min(5).max(300).default(15),
+  status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
+  questions: z.array(question).default([]),
+});
+const include = {
+  questions: {
+    orderBy: { position: 'asc' },
+    include: { options: { orderBy: { position: 'asc' } } },
+  },
+  _count: { select: { sessions: true } },
+};
+function nested(data) {
+  return {
+    ...data,
+    questions: {
+      create: data.questions.map((q, qi) => ({
+        ...q,
+        position: qi,
+        options: { create: q.options.map((o, oi) => ({ ...o, position: oi })) },
+      })),
+    },
+  };
+}
+export async function listQuizzes(req, res) {
+  res.json(
+    await prisma.quiz.findMany({
+      where: { organizerId: req.user.id },
+      include,
+      orderBy: { updatedAt: 'desc' },
+    }),
+  );
+}
+export async function getQuiz(req, res) {
+  const quiz = await prisma.quiz.findFirst({
+    where: { id: Number(req.params.id), organizerId: req.user.id },
+    include,
+  });
+  if (!quiz) return res.status(404).json({ message: 'Квиз не найден' });
+  res.json(quiz);
+}
+export async function createQuiz(req, res) {
+  const data = quizSchema.parse(req.body);
+  const quiz = await prisma.quiz.create({
+    data: { ...nested(data), organizerId: req.user.id },
+    include,
+  });
+  res.status(201).json(quiz);
+}
+export async function updateQuiz(req, res) {
+  const id = Number(req.params.id),
+    data = quizSchema.parse(req.body);
+  const found = await prisma.quiz.findFirst({ where: { id, organizerId: req.user.id } });
+  if (!found) return res.status(404).json({ message: 'Квиз не найден' });
+  const quiz = await prisma.$transaction(async (tx) => {
+    await tx.question.deleteMany({ where: { quizId: id } });
+    return tx.quiz.update({ where: { id }, data: nested(data), include });
+  });
+  res.json(quiz);
+}
+export async function deleteQuiz(req, res) {
+  const found = await prisma.quiz.findFirst({
+    where: { id: Number(req.params.id), organizerId: req.user.id },
+  });
+  if (!found) return res.status(404).json({ message: 'Квиз не найден' });
+  await prisma.quiz.delete({ where: { id: found.id } });
+  res.status(204).end();
+}

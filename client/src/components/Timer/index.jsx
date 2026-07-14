@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
 export default function Timer({ startedAt, duration = 15, stopped = false }) {
-  const calculate = () => Math.max(0, Math.ceil(duration - (Date.now() - new Date(startedAt).getTime()) / 1000));
+  const calculate = () =>
+    Math.max(0, Math.ceil(duration - (Date.now() - new Date(startedAt).getTime()) / 1000));
   const [seconds, setSeconds] = useState(startedAt ? calculate() : duration);
 
   useEffect(() => {

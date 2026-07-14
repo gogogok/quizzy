@@ -1,2 +1,154 @@
-import {useEffect,useState} from 'react';import {Shell} from '../components/Sidebar';import {useAuth} from '../context/AuthContext';import {quizApi} from '../services/api';
-export default function ProfilePage(){const {user,loading}=useAuth(),[tab,setTab]=useState('participation'),[hosted,setHosted]=useState([]),[played,setPlayed]=useState([]),[error,setError]=useState('');useEffect(()=>{if(!user)return;Promise.all([quizApi.history(),quizApi.participationHistory()]).then(([h,p])=>{setHosted(h);setPlayed(p)}).catch(e=>setError(e.message))},[user]);if(loading)return <Shell><div className="card empty-state">Загружаем профиль…</div></Shell>;if(!user)return <Shell><div className="card empty-state">Войдите в аккаунт.</div></Shell>;const initials=user.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();return <Shell><div className="profile-head"><div className="avatar profile-initials">{initials}</div><div><h2>{user.name}</h2><p className="empty-note">{user.email}</p><span className="badge">Создатель и участник</span></div></div><div className="profile-details card"><div><span>Имя</span><b>{user.name}</b></div><div><span>Email</span><b>{user.email}</b></div><div><span>Создано квизов</span><b>{hosted.length}</b></div><div><span>Участий</span><b>{played.length}</b></div></div><div className="tabs profile-tabs"><button className={`tab ${tab==='participation'?'active':''}`} onClick={()=>setTab('participation')}>История участия</button><button className={`tab ${tab==='hosted'?'active':''}`} onClick={()=>setTab('hosted')}>Проведённые квизы</button></div>{error&&<p className="form-error">{error}</p>}{tab==='participation'?<div className="profile-history">{played.length?<table className="table"><thead><tr><th>Квиз</th><th>Дата</th><th>Место</th><th>Баллы</th></tr></thead><tbody>{played.map(r=><tr key={r.id}><td>{r.session.quiz.title}</td><td>{r.session.finishedAt?new Intl.DateTimeFormat('ru-RU').format(new Date(r.session.finishedAt)):'—'}</td><td>{r.place}</td><td><b>{r.score}</b></td></tr>)}</tbody></table>:!error&&<div className="card empty-state">Вы ещё не участвовали в завершённых квизах под этим аккаунтом.</div>}</div>:<div className="profile-history">{hosted.length?<table className="table"><thead><tr><th>Квиз</th><th>Дата</th><th>Код</th><th>Участников</th></tr></thead><tbody>{hosted.map(s=><tr key={s.id}><td>{s.quiz.title}</td><td>{s.finishedAt?new Intl.DateTimeFormat('ru-RU').format(new Date(s.finishedAt)):'—'}</td><td>{s.roomCode}</td><td><b>{s._count.participants}</b></td></tr>)}</tbody></table>:!error&&<div className="card empty-state">Вы ещё не провели ни одного квиза.</div>}</div>}</Shell>}
+import { useEffect, useState } from 'react';
+import { Shell } from '../components/Sidebar';
+import { useAuth } from '../context/AuthContext';
+import { quizApi } from '../services/api';
+export default function ProfilePage() {
+  const { user, loading } = useAuth(),
+    [tab, setTab] = useState('participation'),
+    [hosted, setHosted] = useState([]),
+    [played, setPlayed] = useState([]),
+    [error, setError] = useState('');
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([quizApi.history(), quizApi.participationHistory()])
+      .then(([h, p]) => {
+        setHosted(h);
+        setPlayed(p);
+      })
+      .catch((e) => setError(e.message));
+  }, [user]);
+  if (loading)
+    return (
+      <Shell>
+        <div className="card empty-state">Загружаем профиль…</div>
+      </Shell>
+    );
+  if (!user)
+    return (
+      <Shell>
+        <div className="card empty-state">Войдите в аккаунт.</div>
+      </Shell>
+    );
+  const initials = user.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((x) => x[0])
+    .join('')
+    .toUpperCase();
+  return (
+    <Shell>
+      <div className="profile-head">
+        <div className="avatar profile-initials">{initials}</div>
+        <div>
+          <h2>{user.name}</h2>
+          <p className="empty-note">{user.email}</p>
+          <span className="badge">Создатель и участник</span>
+        </div>
+      </div>
+      <div className="profile-details card">
+        <div>
+          <span>Имя</span>
+          <b>{user.name}</b>
+        </div>
+        <div>
+          <span>Email</span>
+          <b>{user.email}</b>
+        </div>
+        <div>
+          <span>Создано квизов</span>
+          <b>{hosted.length}</b>
+        </div>
+        <div>
+          <span>Участий</span>
+          <b>{played.length}</b>
+        </div>
+      </div>
+      <div className="tabs profile-tabs">
+        <button
+          className={`tab ${tab === 'participation' ? 'active' : ''}`}
+          onClick={() => setTab('participation')}
+        >
+          История участия
+        </button>
+        <button
+          className={`tab ${tab === 'hosted' ? 'active' : ''}`}
+          onClick={() => setTab('hosted')}
+        >
+          Проведённые квизы
+        </button>
+      </div>
+      {error && <p className="form-error">{error}</p>}
+      {tab === 'participation' ? (
+        <div className="profile-history">
+          {played.length ? (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Квиз</th>
+                  <th>Дата</th>
+                  <th>Место</th>
+                  <th>Баллы</th>
+                </tr>
+              </thead>
+              <tbody>
+                {played.map((r) => (
+                  <tr key={r.id}>
+                    <td>{r.session.quiz.title}</td>
+                    <td>
+                      {r.session.finishedAt
+                        ? new Intl.DateTimeFormat('ru-RU').format(new Date(r.session.finishedAt))
+                        : '—'}
+                    </td>
+                    <td>{r.place}</td>
+                    <td>
+                      <b>{r.score}</b>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            !error && (
+              <div className="card empty-state">
+                Вы ещё не участвовали в завершённых квизах под этим аккаунтом.
+              </div>
+            )
+          )}
+        </div>
+      ) : (
+        <div className="profile-history">
+          {hosted.length ? (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Квиз</th>
+                  <th>Дата</th>
+                  <th>Код</th>
+                  <th>Участников</th>
+                </tr>
+              </thead>
+              <tbody>
+                {hosted.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.quiz.title}</td>
+                    <td>
+                      {s.finishedAt
+                        ? new Intl.DateTimeFormat('ru-RU').format(new Date(s.finishedAt))
+                        : '—'}
+                    </td>
+                    <td>{s.roomCode}</td>
+                    <td>
+                      <b>{s._count.participants}</b>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            !error && <div className="card empty-state">Вы ещё не провели ни одного квиза.</div>
+          )}
+        </div>
+      )}
+    </Shell>
+  );
+}

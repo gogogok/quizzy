@@ -1,1 +1,12 @@
-:root{--ink:#151936;--muted:#77809c;--purple:#7040ed;--purple2:#8b4cf6;--line:#e8eaf2;--soft:#f7f7fb;--navy:#11173f;--white:#fff;--success:#20b982;--shadow:0 16px 50px rgba(34,27,80,.08)}
+:root {
+  --ink: #151936;
+  --muted: #77809c;
+  --purple: #7040ed;
+  --purple2: #8b4cf6;
+  --line: #e8eaf2;
+  --soft: #f7f7fb;
+  --navy: #11173f;
+  --white: #fff;
+  --success: #20b982;
+  --shadow: 0 16px 50px rgba(34, 27, 80, 0.08);
+}

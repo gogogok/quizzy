@@ -1,2 +1,55 @@
-import {useState} from 'react';import {Link,useNavigate} from 'react-router-dom';import Input from '../components/Input';import {Logo} from '../components/Header';import {useAuth} from '../context/AuthContext';
-export default function LoginPage(){const nav=useNavigate(),{login}=useAuth(),[error,setError]=useState(''),[busy,setBusy]=useState(false);async function submit(e){e.preventDefault();setBusy(true);setError('');try{await login({email:e.target.email.value,password:e.target.password.value});nav('/dashboard')}catch(x){setError(x.message)}finally{setBusy(false)}}return <div className="auth"><section className="auth-pane"><div className="auth-box"><Logo/><h1>С возвращением!</h1><p>Войдите, чтобы продолжить работу с квизами</p><form onSubmit={submit}><Input name="email" label="Email" type="email" placeholder="name@mail.ru" required/><Input name="password" label="Пароль" type="password" placeholder="••••••••" required/>{error&&<p className="form-error">{error}</p>}<button disabled={busy} className="btn primary wide">{busy?'Входим…':'Войти'}</button></form><p>Нет аккаунта? <Link className="eyebrow" to="/register">Зарегистрироваться</Link></p></div></section><section className="auth-visual"><div><div className="trophy">🏆</div><h2>Создавайте. Играйте. Побеждайте.</h2></div></section></div>}
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Input from '../components/Input';
+import { Logo } from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+export default function LoginPage() {
+  const nav = useNavigate(),
+    { login } = useAuth(),
+    [error, setError] = useState(''),
+    [busy, setBusy] = useState(false);
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      await login({ email: e.target.email.value, password: e.target.password.value });
+      nav('/dashboard');
+    } catch (x) {
+      setError(x.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="auth">
+      <section className="auth-pane">
+        <div className="auth-box">
+          <Logo />
+          <h1>С возвращением!</h1>
+          <p>Войдите, чтобы продолжить работу с квизами</p>
+          <form onSubmit={submit}>
+            <Input name="email" label="Email" type="email" placeholder="name@mail.ru" required />
+            <Input name="password" label="Пароль" type="password" placeholder="••••••••" required />
+            {error && <p className="form-error">{error}</p>}
+            <button disabled={busy} className="btn primary wide">
+              {busy ? 'Входим…' : 'Войти'}
+            </button>
+          </form>
+          <p>
+            Нет аккаунта?{' '}
+            <Link className="eyebrow" to="/register">
+              Зарегистрироваться
+            </Link>
+          </p>
+        </div>
+      </section>
+      <section className="auth-visual">
+        <div>
+          <div className="trophy">🏆</div>
+          <h2>Создавайте. Играйте. Побеждайте.</h2>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,3 +1,34 @@
-import {Link} from 'react-router-dom';
-export const Logo=()=> <Link className="brand" to="/"><span className="brand-mark">Q</span>Quizzy</Link>;
-export default function Header(){function scrollTo(event,id){event.preventDefault();document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}return <header className="topbar"><Logo/><nav className="nav" aria-label="Основная навигация"><a href="#features" onClick={event=>scrollTo(event,'features')}>Возможности</a><a href="#how" onClick={event=>scrollTo(event,'how')}>Как это работает</a><Link to="/join">Присоединиться</Link></nav><div className="actions"><Link className="btn ghost" to="/login">Войти</Link><Link className="btn primary" to="/register">Регистрация</Link></div></header>}
+import { Link } from 'react-router-dom';
+export const Logo = () => (
+  <Link className="brand" to="/">
+    <span className="brand-mark">Q</span>Quizzy
+  </Link>
+);
+export default function Header() {
+  function scrollTo(event, id) {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  return (
+    <header className="topbar">
+      <Logo />
+      <nav className="nav" aria-label="Основная навигация">
+        <a href="#features" onClick={(event) => scrollTo(event, 'features')}>
+          Возможности
+        </a>
+        <a href="#how" onClick={(event) => scrollTo(event, 'how')}>
+          Как это работает
+        </a>
+        <Link to="/join">Присоединиться</Link>
+      </nav>
+      <div className="actions">
+        <Link className="btn ghost" to="/login">
+          Войти
+        </Link>
+        <Link className="btn primary" to="/register">
+          Регистрация
+        </Link>
+      </div>
+    </header>
+  );
+}

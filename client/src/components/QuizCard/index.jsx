@@ -1,3 +1,42 @@
-import {Link} from 'react-router-dom';
-const names={DRAFT:'Черновик',PUBLISHED:'Опубликован',ACTIVE:'Активен',FINISHED:'Завершён'};
-export default function QuizCard({quiz,onStart}){const canStart=quiz.status!=='DRAFT';return <article className="quiz-row"><div><h3>{quiz.title} <span className={`badge status-${quiz.status.toLowerCase()}`}>{names[quiz.status]}</span></h3><div className="meta"><span>{quiz.questions.length} вопросов</span><span>{quiz.category||'Без категории'}</span><span>Изменён {new Intl.DateTimeFormat('ru-RU').format(new Date(quiz.updatedAt))}</span></div></div><div className="quiz-card-actions"><Link className="btn" to={`/quiz/${quiz.id}/edit`}>Редактировать</Link><button className="btn primary" disabled={!canStart} onClick={()=>onStart(quiz)} title={!canStart?'Сначала опубликуйте квиз':''}>{quiz.status==='DRAFT'?'Квиз не опубликован':quiz.status==='FINISHED'?'Провести ещё раз':'Создать комнату'}</button></div></article>}
+import { Link } from 'react-router-dom';
+const names = {
+  DRAFT: 'Черновик',
+  PUBLISHED: 'Опубликован',
+  ACTIVE: 'Активен',
+  FINISHED: 'Завершён',
+};
+export default function QuizCard({ quiz, onStart }) {
+  const canStart = quiz.status !== 'DRAFT';
+  return (
+    <article className="quiz-row">
+      <div>
+        <h3>
+          {quiz.title}{' '}
+          <span className={`badge status-${quiz.status.toLowerCase()}`}>{names[quiz.status]}</span>
+        </h3>
+        <div className="meta">
+          <span>{quiz.questions.length} вопросов</span>
+          <span>{quiz.category || 'Без категории'}</span>
+          <span>Изменён {new Intl.DateTimeFormat('ru-RU').format(new Date(quiz.updatedAt))}</span>
+        </div>
+      </div>
+      <div className="quiz-card-actions">
+        <Link className="btn" to={`/quiz/${quiz.id}/edit`}>
+          Редактировать
+        </Link>
+        <button
+          className="btn primary"
+          disabled={!canStart}
+          onClick={() => onStart(quiz)}
+          title={!canStart ? 'Сначала опубликуйте квиз' : ''}
+        >
+          {quiz.status === 'DRAFT'
+            ? 'Квиз не опубликован'
+            : quiz.status === 'FINISHED'
+              ? 'Провести ещё раз'
+              : 'Создать комнату'}
+        </button>
+      </div>
+    </article>
+  );
+}
